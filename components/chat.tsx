@@ -42,7 +42,7 @@ export default function Chat() {
   const [isFocused, setIsFocused] = useState(false);
 
   return (
-    <div className="relative flex flex-col h-full flex-1 z-[11] bg-[#1B1C22] rounded-2xl border border-white/10">
+    <div className="relative flex flex-col h-full flex-1 z-[11] bg-[#1B1C22] rounded-2xl border border-white/10 overflow-hidden">
       {/* Chat Messages Container */}
       <div className="flex-1 overflow-hidden">
         <ScrollArea className="h-full">
