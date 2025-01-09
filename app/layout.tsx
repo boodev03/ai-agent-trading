@@ -19,7 +19,7 @@ export const metadata: Metadata = {
   openGraph: {
     images: [
       {
-        url: "/logo.jpg",
+        url: "/og.jpg",
         width: 800,
         height: 600,
         alt: "Invest AI Agent Logo",
