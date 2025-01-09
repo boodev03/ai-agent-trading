@@ -1,14 +1,58 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Image from "next/image";
 import { Button } from "./ui/button";
 import QRCodeModal from "./qr-code-modal";
 import { useAgentStore } from "@/lib/store";
+import { getProvider, type PhantomProvider } from "@/lib/wallet";
 
 export default function Header() {
   const [isQRModalOpen, setIsQRModalOpen] = useState(false);
   const selectedAgent = useAgentStore((state) => state.selectedAgent);
+  const [provider, setProvider] = useState<PhantomProvider | undefined>(
+    undefined
+  );
+  const [walletKey, setWalletKey] = useState<string | undefined>(undefined);
+
+  useEffect(() => {
+    const provider = getProvider();
+    setProvider(provider);
+    provider?.on("connect", (publicKey: any) => {
+      setWalletKey(publicKey.toString());
+    });
+    provider?.on("disconnect", () => {
+      setWalletKey(undefined);
+    });
+  }, []);
+
+  const connectWallet = async () => {
+    try {
+      if (!provider) {
+        window.open("https://phantom.app/", "_blank");
+        return;
+      }
+      const { publicKey } = await provider.connect();
+      setWalletKey(publicKey.toString());
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  const disconnectWallet = async () => {
+    try {
+      if (provider) {
+        await provider.disconnect();
+        setWalletKey(undefined);
+      }
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  const formatWalletAddress = (address: string) => {
+    return `${address.slice(0, 4)}...${address.slice(-4)}`;
+  };
 
   return (
     <>
@@ -122,9 +166,23 @@ export default function Header() {
                 Earn {selectedAgent?.token}
               </span>
             </Button>
-            <Button className="bg-mercury-950 text-white hover:bg-mercury-900">
-              Connect Wallet
-            </Button>
+
+            {walletKey ? (
+              <Button
+                onClick={disconnectWallet}
+                className="bg-mercury-950 text-white hover:bg-mercury-900 flex items-center gap-2"
+              >
+                <span className="h-2 w-2 rounded-full bg-green-400" />
+                {formatWalletAddress(walletKey)}
+              </Button>
+            ) : (
+              <Button
+                onClick={connectWallet}
+                className="bg-mercury-950 text-white hover:bg-mercury-900"
+              >
+                {provider ? "Connect Wallet" : "Install Phantom"}
+              </Button>
+            )}
           </div>
         </div>
       </div>

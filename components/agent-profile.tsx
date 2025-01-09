@@ -21,7 +21,7 @@ export default function AgentProfile() {
   } = selectedAgent || {};
 
   return (
-    <div className="relative flex w-full max-w-full flex-col overflow-y-auto transition-all duration-300 ease-linear scrollbar-hide max-md:px-4 lg:max-w-[320px]">
+    <div className="relative pb-5 flex w-full max-w-full flex-col overflow-y-auto transition-all duration-300 ease-linear scrollbar-hide max-md:px-4 lg:max-w-[320px]">
       <div className="mt-5 flex h-full flex-col md:h-fit">
         <div className="relative">
           <div className="relative overflow-hidden rounded-[24px] border border-white/10">
