@@ -10,8 +10,22 @@ const barlow = Barlow({
 });
 
 export const metadata: Metadata = {
-  title: "v0 App",
-  description: "Created with v0",
+  title: "Invest AI Agent",
+  description:
+    "Build your personal AI trading agent to automate smart investment decisions on Solana",
+  icons: {
+    icon: "/logo.jpg",
+  },
+  openGraph: {
+    images: [
+      {
+        url: "/logo.jpg",
+        width: 800,
+        height: 600,
+        alt: "Invest AI Agent Logo",
+      },
+    ],
+  },
 };
 
 export default function RootLayout({
