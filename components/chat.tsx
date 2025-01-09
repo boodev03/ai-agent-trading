@@ -1,10 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import Image from "next/image";
 import { Button } from "./ui/button";
 import { ScrollArea } from "./ui/scroll-area";
 import { format } from "date-fns";
+import { useAgentStore } from "@/lib/store";
 
 interface Message {
   id: string;
@@ -19,33 +20,144 @@ interface Message {
 const mockMessages: Message[] = [
   {
     id: "1",
-    text: "Late night vibes",
+    text: "BTC looking bullish today! Just broke $70k 🚀",
     sender: "user",
     timestamp: new Date("2024-03-20T10:00:00"),
-    username: "babytee",
+    username: "cryptoTrader",
   },
   {
     id: "2",
-    text: "Late night vibes",
+    text: "ETH just broke $4k resistance! Next target $5k",
     sender: "agent",
     timestamp: new Date("2024-03-20T10:01:00"),
     avatar:
       "https://storage.distilled.ai/distill/avatar/3gyMehG5frLLRXC3Xu1KFKAVgaisvtixghLDhMiJv75x/890f8134-3005-4a89-b4f8-e31a77298ad5.jpeg",
     username: "Max",
-    replyTo: "babytee",
   },
+  {
+    id: "3",
+    text: "SOL pumping hard right now, already at $180",
+    sender: "user",
+    timestamp: new Date("2024-03-20T10:02:00"),
+    username: "solanaWhale",
+  },
+  {
+    id: "4",
+    text: "The market sentiment is super bullish. BNB and XRP also showing strength 📈",
+    sender: "agent",
+    timestamp: new Date("2024-03-20T10:03:00"),
+    avatar:
+      "https://storage.distilled.ai/distill/avatar/3gyMehG5frLLRXC3Xu1KFKAVgaisvtixghLDhMiJv75x/890f8134-3005-4a89-b4f8-e31a77298ad5.jpeg",
+    username: "Max",
+  },
+  {
+    id: "5",
+    text: "DOGE and SHIB starting to move. Meme season incoming? 🐕",
+    sender: "user",
+    timestamp: new Date("2024-03-20T10:04:00"),
+    username: "memeCoins",
+  },
+  {
+    id: "6",
+    text: "Layer 2s are the future. Look at Arbitrum and Optimism volumes! 🚀",
+    sender: "agent",
+    timestamp: new Date("2024-03-20T10:05:00"),
+    avatar:
+      "https://storage.distilled.ai/distill/avatar/3gyMehG5frLLRXC3Xu1KFKAVgaisvtixghLDhMiJv75x/890f8134-3005-4a89-b4f8-e31a77298ad5.jpeg",
+    username: "Max",
+  },
+  {
+    id: "7",
+    text: "DeFi TVL hitting new ATHs. The ecosystem is maturing nicely 📊",
+    sender: "user",
+    timestamp: new Date("2024-03-20T10:06:00"),
+    username: "defiWhale",
+  },
+];
+
+const botResponses = [
+  "BTC looking strong at $65k support 💪",
+  "ETH gas fees dropping, bullish signal! 📈",
+  "SOL ecosystem growing fast 🚀",
+  "DOGE memecoin season incoming? 🐕",
+  "Market sentiment is very positive today",
+  "Accumulating more BTC at these levels",
+  "ETH merge coming soon, price impact?",
+  "SOL TPS hitting new records 🔥",
+  "DeFi TVL growing exponentially 📊",
+  "NFT market heating up again! 🎨",
+];
+
+const userMessages = [
+  "Just bought the BTC dip! 💎🙌",
+  "ETH looking ready for takeoff 🚀",
+  "SOL is my biggest bag right now",
+  "Who's accumulating at these levels?",
+  "This bull run is just getting started",
+  "DCA is the way! 💯",
+  "Technical analysis looking bullish",
+  "Holding strong through volatility",
+  "Never selling, only buying more",
+  "To the moon! 🌙",
 ];
 
 export default function Chat() {
   const [messages, setMessages] = useState<Message[]>(mockMessages);
   const [inputText, setInputText] = useState("");
   const [isFocused, setIsFocused] = useState(false);
+  const [showScrollButton, setShowScrollButton] = useState(false);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const scrollAreaRef = useRef<HTMLDivElement>(null);
+  const selectedChat = useAgentStore((state) => state.selectedChat);
+  const selectedAgent = useAgentStore((state) => state.selectedAgent);
+
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
+
+  const handleScroll = (event: any) => {
+    const { scrollTop, scrollHeight, clientHeight } = event.currentTarget;
+    const isNearBottom = scrollHeight - scrollTop - clientHeight < 100;
+    setShowScrollButton(!isNearBottom);
+  };
+
+  // Reset messages when selected chat changes
+  useEffect(() => {
+    // Keep existing messages if any, don't reset to empty
+    if (messages.length === 0) {
+      setMessages(mockMessages);
+    }
+
+    const interval = setInterval(() => {
+      const isBot = Math.random() > 0.5;
+      const newMessage = {
+        id: Date.now().toString(),
+        text: isBot
+          ? botResponses[Math.floor(Math.random() * botResponses.length)]
+          : userMessages[Math.floor(Math.random() * userMessages.length)],
+        sender: isBot ? "agent" : "user",
+        timestamp: new Date(),
+        username: isBot
+          ? selectedAgent?.name
+          : `trader${Math.floor(Math.random() * 100)}`,
+        avatar: isBot ? selectedAgent?.avatar : undefined,
+      };
+
+      setMessages((prev) => [...prev, newMessage as Message]);
+    }, 2000);
+
+    return () => clearInterval(interval);
+  }, [selectedChat, selectedAgent, messages.length]);
 
   return (
-    <div className="relative flex flex-col h-full flex-1 z-[11] bg-[#1B1C22] rounded-2xl border border-white/10 overflow-hidden">
+    <div className="relative flex flex-col flex-1 z-[11] bg-[#1B1C22] rounded-2xl border border-white/10 overflow-hidden">
       {/* Chat Messages Container */}
       <div className="flex-1 overflow-hidden">
-        <ScrollArea className="h-full">
+        <ScrollArea
+          className="h-[calc(100vh-200px)]"
+          onScrollCapture={handleScroll}
+          ref={scrollAreaRef}
+        >
           <div className="space-y-6 p-4">
             {messages.map((message, index) => {
               const isFirstMessageOfDay =
@@ -118,9 +230,41 @@ export default function Chat() {
                 </div>
               );
             })}
+            <div ref={messagesEndRef} />
           </div>
         </ScrollArea>
       </div>
+
+      {/* Scroll to bottom button */}
+      {1 && (
+        <button
+          onClick={scrollToBottom}
+          className="absolute bottom-24 right-8 bg-[#4C83ff] text-white p-2 rounded-full shadow-lg hover:bg-[#4C83ff]/90 transition-all"
+        >
+          <svg
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M19 14L12 21L5 14"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+            <path
+              d="M19 5L12 12L5 5"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </svg>
+        </button>
+      )}
 
       {/* Chat Input */}
       <div className="sticky bottom-0 left-0 right-0 bg-[#1B1C22] border-t border-white/10">

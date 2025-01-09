@@ -13,15 +13,17 @@ export default function AgentProfile() {
     name: agentName,
     avatar: agentAvatar,
     video: agentVideo,
-    token,
     website,
     twitter,
     telegram,
+    another,
     contract,
+    desc,
+    subDesc,
   } = selectedAgent || {};
 
   return (
-    <div className="relative pb-5 flex w-full max-w-full flex-col overflow-y-auto transition-all duration-300 ease-linear scrollbar-hide max-md:px-4 lg:max-w-[320px]">
+    <div className="relative pb-5 flex w-full max-w-full flex-col overflow-y-auto transition-all duration-300 ease-linear scrollbar-hide max-md:px-4 xl:max-w-[320px]">
       <div className="mt-5 flex h-full flex-col md:h-fit">
         <div className="relative">
           <div className="relative overflow-hidden rounded-[24px] border border-white/10">
@@ -37,9 +39,9 @@ export default function AgentProfile() {
               </video>
             ) : (
               <img
-                src={agentAvatar}
+                src={another || agentAvatar}
                 alt={agentName}
-                className="h-full min-h-[350px] w-full object-cover max-h-[350px] md:max-h-[400px] md:h-auto"
+                className="h-full min-h-[350px] w-full object-contain max-h-[350px] md:max-h-[400px] md:h-auto"
               />
             )}
 
@@ -66,37 +68,6 @@ export default function AgentProfile() {
                 </svg>
               </button>
             )}
-          </div>
-
-          <div className="absolute bottom-4 left-3 right-3 flex items-center justify-between rounded-[100px] bg-[rgba(27,28,34,0.8)] p-3 backdrop-blur-md border border-white/10">
-            <div className="flex items-center gap-2">
-              <div className="flex h-3 w-3 items-center justify-center rounded-full bg-[#A5DC004D]">
-                <div className="h-2 w-2 rounded-full bg-[#58DC00]"></div>
-              </div>
-              <p className="text-sm font-medium leading-4 text-white">
-                Play to <br /> Earn $MAX
-              </p>
-            </div>
-            <div
-              className="flex h-[50px] items-center gap-2 rounded-xl px-3"
-              style={{
-                backgroundImage:
-                  "url(https://mesh.distilled.ai/assets/bg-btc-prediction-Dlew6O9D.png)",
-                backgroundSize: "100% 100%",
-                backgroundRepeat: "no-repeat",
-              }}
-            >
-              <div className="relative">
-                <img
-                  src={agentAvatar}
-                  className="h-8 w-8 rounded-full"
-                  alt="BitMax Avatar"
-                />
-              </div>
-              <p className="whitespace-nowrap font-bold italic text-white">
-                <span className="text-[#F7931A]">{token}</span> Prediction
-              </p>
-            </div>
           </div>
         </div>
 
@@ -236,28 +207,8 @@ export default function AgentProfile() {
             Description
           </h4>
           <ScrollArea className="max-h-[150px] pr-4">
-            <p className="text-sm text-white/60 space-y-2">
-              Prototype AI Agent on{" "}
-              <a
-                href="https://mesh.distilled.ai/"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-[#4C83ff] hover:underline font-medium"
-              >
-                Distilled AI
-              </a>
-            </p>
-            <p className="text-sm text-white/60 mt-2">
-              $MAX is the utility token for{" "}
-              <a
-                href="https://agents.land"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-[#4C83ff] hover:underline font-medium"
-              >
-                Agents.land
-              </a>
-            </p>
+            <p className="text-sm text-white/60 space-y-2">{desc}</p>
+            <p className="text-sm text-white/60 mt-2">{subDesc}</p>
           </ScrollArea>
         </div>
       </div>

@@ -14,17 +14,84 @@ export default function Header() {
     undefined
   );
   const [walletKey, setWalletKey] = useState<string | undefined>(undefined);
+  const [mounted, setMounted] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
 
+  // Check if mobile on mount and window resize
   useEffect(() => {
-    const provider = getProvider();
-    setProvider(provider);
-    provider?.on("connect", (publicKey: any) => {
-      setWalletKey(publicKey.toString());
-    });
-    provider?.on("disconnect", () => {
-      setWalletKey(undefined);
-    });
+    const checkIfMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+
+    checkIfMobile();
+    window.addEventListener("resize", checkIfMobile);
+
+    return () => window.removeEventListener("resize", checkIfMobile);
   }, []);
+
+  // Check wallet connection on mount
+  useEffect(() => {
+    const checkWalletConnection = async () => {
+      try {
+        const provider = getProvider();
+        setProvider(provider);
+
+        if (provider) {
+          try {
+            // Try to reconnect if previously connected
+            const response = await provider.connect();
+            setWalletKey(response.publicKey.toString());
+            localStorage.setItem("walletKey", response.publicKey.toString());
+          } catch (error) {
+            // If not already connected, try to get from localStorage
+            const savedWalletKey = localStorage.getItem("walletKey");
+            if (savedWalletKey) {
+              setWalletKey(savedWalletKey);
+            }
+          }
+        }
+      } catch (error) {
+        console.error(error);
+      } finally {
+        setMounted(true);
+      }
+    };
+
+    checkWalletConnection();
+  }, []);
+
+  // Handle wallet events
+  useEffect(() => {
+    if (provider) {
+      provider.on("connect", (publicKey: any) => {
+        const walletAddress = publicKey.toString();
+        setWalletKey(walletAddress);
+        localStorage.setItem("walletKey", walletAddress);
+      });
+
+      provider.on("disconnect", () => {
+        setWalletKey(undefined);
+        localStorage.removeItem("walletKey");
+      });
+
+      provider.on("accountChanged", (publicKey: any) => {
+        if (publicKey) {
+          const walletAddress = publicKey.toString();
+          setWalletKey(walletAddress);
+          localStorage.setItem("walletKey", walletAddress);
+        } else {
+          setWalletKey(undefined);
+          localStorage.removeItem("walletKey");
+        }
+      });
+
+      return () => {
+        provider.removeAllListeners("connect");
+        provider.removeAllListeners("disconnect");
+        provider.removeAllListeners("accountChanged");
+      };
+    }
+  }, [provider]);
 
   const connectWallet = async () => {
     try {
@@ -33,7 +100,9 @@ export default function Header() {
         return;
       }
       const { publicKey } = await provider.connect();
-      setWalletKey(publicKey.toString());
+      const walletAddress = publicKey.toString();
+      setWalletKey(walletAddress);
+      localStorage.setItem("walletKey", walletAddress);
     } catch (error) {
       console.error(error);
     }
@@ -44,6 +113,7 @@ export default function Header() {
       if (provider) {
         await provider.disconnect();
         setWalletKey(undefined);
+        localStorage.removeItem("walletKey");
       }
     } catch (error) {
       console.error(error);
@@ -54,11 +124,13 @@ export default function Header() {
     return `${address.slice(0, 4)}...${address.slice(-4)}`;
   };
 
+  if (!mounted) return null;
+
   return (
     <>
       <div className="w-full flex-1 px-4 pb-2 pt-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
+        <div className="flex flex-col md:flex-row items-center justify-between gap-4 md:gap-0">
+          <div className="flex items-center gap-3 w-full md:w-auto">
             <div className="flex items-center gap-2">
               <div className="flex items-center gap-x-3">
                 {/* Avatar with Status */}
@@ -154,23 +226,23 @@ export default function Header() {
           </div>
 
           {/* Right Side Buttons */}
-          <div className="flex items-center gap-3">
-            <Button variant="ghost" className="flex items-center gap-2">
-              <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-                <path
-                  d="M10.8346 3V8.83333H15.8346L9.16797 18V12.1667H4.16797L10.8346 3Z"
-                  fill="#F78500"
-                />
-              </svg>
-              <span className="text-sm font-medium">
-                Earn {selectedAgent?.token}
-              </span>
-            </Button>
+          <div className="flex items-center gap-3 w-full md:w-auto justify-center md:justify-end">
+            {!isMobile && (
+              <Button variant="ghost" className="flex items-center gap-2">
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                  <path
+                    d="M10.8346 3V8.83333H15.8346L9.16797 18V12.1667H4.16797L10.8346 3Z"
+                    fill="#F78500"
+                  />
+                </svg>
+                <span className="text-sm font-medium">Earn $SOL</span>
+              </Button>
+            )}
 
             {walletKey ? (
               <Button
                 onClick={disconnectWallet}
-                className="bg-mercury-950 text-white hover:bg-mercury-900 flex items-center gap-2"
+                className="bg-mercury-950 text-white hover:bg-mercury-900 flex items-center gap-2 w-full md:w-auto"
               >
                 <span className="h-2 w-2 rounded-full bg-green-400" />
                 {formatWalletAddress(walletKey)}
@@ -178,7 +250,7 @@ export default function Header() {
             ) : (
               <Button
                 onClick={connectWallet}
-                className="bg-mercury-950 text-white hover:bg-mercury-900"
+                className="bg-mercury-950 text-white hover:bg-mercury-900 w-full md:w-auto"
               >
                 {provider ? "Connect Wallet" : "Install Phantom"}
               </Button>

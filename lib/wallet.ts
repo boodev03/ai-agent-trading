@@ -3,6 +3,7 @@
 export type PhantomEvent = "disconnect" | "connect" | "accountChanged";
 
 export interface PhantomProvider {
+    removeAllListeners(arg0: string): unknown;
     connect: () => Promise<{ publicKey: { toString: () => string } }>;
     disconnect: () => Promise<void>;
     on: (event: PhantomEvent, callback: (args: any) => void) => void;
