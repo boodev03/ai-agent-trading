@@ -1,0 +1,72 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: 223 14% 10%;
+  /* #111319 */
+  --wrapper-bg: 225 9% 12%;
+  /* #1B1C22 */
+  --primary: 222 100% 65%;
+  /* #4C83ff */
+  --primary-hover: 222 100% 70%;
+  --text-primary: 0 0% 100%;
+  --text-secondary: 0 0% 80%;
+}
+
+body {
+  background-color: hsl(var(--background));
+  color: hsl(var(--text-primary));
+}
+
+/* Update mercury colors to match new scheme */
+.bg-mercury-950 {
+  background-color: hsl(var(--primary));
+}
+
+.bg-mercury-900 {
+  background-color: hsl(var(--primary-hover));
+}
+
+.bg-mercury-100 {
+  background-color: hsl(var(--wrapper-bg));
+}
+
+.bg-mercury-30 {
+  background-color: hsl(var(--wrapper-bg));
+}
+
+.hover\:bg-mercury-900:hover {
+  background-color: hsl(var(--primary-hover));
+}
+
+.hover\:bg-mercury-100:hover {
+  background-color: hsl(225 9% 15%);
+}
+
+/* Update chat message styles */
+.message-bubble-user {
+  background-color: hsl(var(--primary));
+  color: hsl(var(--text-primary));
+}
+
+.message-bubble-agent {
+  background-color: hsl(var(--wrapper-bg));
+  color: hsl(var(--text-primary));
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateX(-4px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.2s ease-out;
+}
