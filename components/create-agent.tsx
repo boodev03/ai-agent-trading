@@ -5,6 +5,9 @@ import { useEffect, useState } from "react";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { Textarea } from "./ui/textarea";
+import { useWallet, useConnection } from "@solana/wallet-adapter-react";
+import { WalletMultiButton } from "@solana/wallet-adapter-react-ui";
+import { LAMPORTS_PER_SOL } from "@solana/web3.js";
 
 const AI_MODELS = [
   {
@@ -60,94 +63,11 @@ const AI_MODELS = [
 export default function CreateAgent() {
   const setIsCreatingAgent = useAgentStore((state) => state.setIsCreatingAgent);
   const [mounted, setMounted] = useState(false);
-  const [address, setAddress] = useState<string>("");
-  const [isConnected, setIsConnected] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [loadingText, setLoadingText] = useState("");
-
-  // Check wallet connection on mount
-  useEffect(() => {
-    const checkWalletConnection = async () => {
-      try {
-        // @ts-ignore
-        const { solana } = window;
-
-        if (solana && solana.isPhantom) {
-          const response = await solana.connect({ onlyIfTrusted: true });
-          const address = response.publicKey.toString();
-          setAddress(address);
-          setIsConnected(true);
-          localStorage.setItem("walletAddress", address);
-        }
-      } catch (error) {
-        // If not already connected, try to get from localStorage
-        const savedAddress = localStorage.getItem("walletAddress");
-        if (savedAddress) {
-          setAddress(savedAddress);
-          setIsConnected(true);
-        }
-      } finally {
-        setMounted(true);
-      }
-    };
-
-    checkWalletConnection();
-  }, []);
-
-  const connectWallet = async () => {
-    try {
-      // @ts-ignore
-      const { solana } = window;
-
-      if (solana) {
-        if (solana.isPhantom) {
-          const response = await solana.connect();
-          const address = response.publicKey.toString();
-          setAddress(address);
-          setIsConnected(true);
-          localStorage.setItem("walletAddress", address);
-        }
-      } else {
-        window.open("https://phantom.app/", "_blank");
-      }
-    } catch (error) {
-      console.log(error);
-    }
-  };
-
-  // Handle wallet change or disconnect
-  useEffect(() => {
-    // @ts-ignore
-    const { solana } = window;
-
-    if (solana) {
-      solana.on("accountChanged", async () => {
-        try {
-          const response = await solana.connect({ onlyIfTrusted: true });
-          const newAddress = response.publicKey.toString();
-          setAddress(newAddress);
-          localStorage.setItem("walletAddress", newAddress);
-        } catch (error) {
-          setIsConnected(false);
-          setAddress("");
-          localStorage.removeItem("walletAddress");
-        }
-      });
-
-      solana.on("disconnect", () => {
-        setIsConnected(false);
-        setAddress("");
-        localStorage.removeItem("walletAddress");
-      });
-    }
-
-    return () => {
-      if (solana) {
-        solana.removeAllListeners("accountChanged");
-        solana.removeAllListeners("disconnect");
-      }
-    };
-  }, []);
+  const { publicKey, connected } = useWallet();
+  const { connection } = useConnection();
+  const [balance, setBalance] = useState<number | null>(null);
 
   const [formData, setFormData] = useState({
     name: "",
@@ -155,8 +75,35 @@ export default function CreateAgent() {
     model: "",
   });
 
+  // Check mounted state
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  // Fetch wallet balance
+  useEffect(() => {
+    const getBalance = async () => {
+      if (publicKey && connection) {
+        try {
+          const bal = await connection.getBalance(publicKey);
+          setBalance(bal / LAMPORTS_PER_SOL);
+        } catch (e) {
+          console.error("Failed to fetch balance:", e);
+        }
+      }
+    };
+
+    if (connected) {
+      getBalance();
+    } else {
+      setBalance(null);
+    }
+  }, [publicKey, connection, connected]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!connected) return;
+
     setIsLoading(true);
     setLoadingText("We are checking your wallet address...");
 
@@ -165,6 +112,10 @@ export default function CreateAgent() {
     setLoadingText("Creating your agent...");
 
     // Keep it in loading state forever
+    // Remove the following lines:
+    // await new Promise((resolve) => setTimeout(resolve, 2000));
+    // setIsLoading(false);
+    // setLoadingText("");
   };
 
   if (!mounted) return null;
@@ -172,41 +123,51 @@ export default function CreateAgent() {
   return (
     <div className="flex h-full flex-col">
       {/* Header */}
-      <div className="flex items-center justify-between border-b border-white/10 p-4">
-        <div>
-          <h2 className="text-xl font-medium text-white">Create Your Agent</h2>
-          {isConnected && (
-            <p className="text-sm text-white/60 mt-1">
-              Connected: {address.slice(0, 4)}...{address.slice(-4)}
-            </p>
-          )}
+      <div className="flex items-center justify-between p-4">
+        <div className="flex items-center gap-4">
+          <button
+            onClick={() => setIsCreatingAgent(false)}
+            className="rounded-xl p-2 text-white/60 hover:bg-white/5 transition-colors"
+          >
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+              <path
+                d="M12.5 15L7.5 10L12.5 5"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+          </button>
+          <h2 className="text-lg font-medium">Create Your Agent</h2>
         </div>
-        <button
-          onClick={() => setIsCreatingAgent(false)}
-          className="rounded-lg p-2 text-white/60 hover:bg-white/5"
-          disabled={isLoading}
-        >
-          Cancel
-        </button>
       </div>
 
       {/* Content */}
       <div className="flex-1 p-6">
-        {!isConnected ? (
-          // Not connected - show connect button
-          <div className="flex flex-col items-center justify-center h-full">
-            <p className="text-white/60 mb-4 text-center">
-              Please connect your Phantom wallet to create an agent
+        {!connected ? (
+          <div className="flex h-full flex-col items-center justify-center">
+            <div className="mb-6 rounded-full bg-white/5 p-3">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                <path
+                  d="M21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3C16.9706 3 21 7.02944 21 12Z"
+                  stroke="#4C83ff"
+                  strokeWidth="2"
+                />
+                <path
+                  d="M15 12C15 13.6569 13.6569 15 12 15C10.3431 15 9 13.6569 9 12C9 10.3431 10.3431 9 12 9C13.6569 9 15 10.3431 15 12Z"
+                  stroke="#4C83ff"
+                  strokeWidth="2"
+                />
+              </svg>
+            </div>
+            <h3 className="mb-2 text-lg font-medium">Connect Your Wallet</h3>
+            <p className="mb-6 text-center text-sm text-white/60">
+              Connect your wallet to create and customize your AI trading agent
             </p>
-            <Button
-              onClick={connectWallet}
-              className="bg-[#4C83ff] hover:bg-[#4C83ff]/90"
-            >
-              Connect Phantom Wallet
-            </Button>
+            <WalletMultiButton className="bg-mercury-950 text-white hover:bg-mercury-900" />
           </div>
         ) : isLoading ? (
-          // Loading state - now can stay forever
           <div className="flex flex-col items-center justify-center h-full">
             <div className="w-8 h-8 border-2 border-white/10 border-t-[#4C83ff] rounded-full animate-spin mb-4" />
             <p className="text-white/60 text-center animate-pulse">

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import { Space_Mono } from "next/font/google";
+import { WalletProvider } from "./providers/WalletProvider";
 
 const spaceMono = Space_Mono({
   subsets: ["latin"],
@@ -10,9 +11,9 @@ const spaceMono = Space_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Invest AI Agent",
+  title: "Fox AI Agent",
   description:
-    "Build your personal AI trading agent to automate smart investment decisions on Solana",
+    "Create your own private AI-Agent, trained on your private data, secured with your private key.",
   icons: {
     icon: "/logo.jpg",
   },
@@ -35,7 +36,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className={`${spaceMono.variable}`}>
-      <body className="font-barlow">{children}</body>
+      <body className="font-barlow">
+        <WalletProvider>{children}</WalletProvider>
+      </body>
     </html>
   );
 }

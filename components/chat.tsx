@@ -6,6 +6,7 @@ import { Button } from "./ui/button";
 import { ScrollArea } from "./ui/scroll-area";
 import { format } from "date-fns";
 import { useAgentStore } from "@/lib/store";
+import { agents } from "@/data";
 
 interface Message {
   id: string;
@@ -17,99 +18,478 @@ interface Message {
   replyTo?: string;
 }
 
-const mockMessages: Message[] = [
-  {
-    id: "1",
-    text: "BTC looking bullish today! Just broke $70k 🚀",
-    sender: "user",
-    timestamp: new Date("2024-03-20T10:00:00"),
-    username: "cryptoTrader",
-  },
-  {
-    id: "2",
-    text: "ETH just broke $4k resistance! Next target $5k",
-    sender: "agent",
-    timestamp: new Date("2024-03-20T10:01:00"),
-    avatar:
-      "https://storage.distilled.ai/distill/avatar/3gyMehG5frLLRXC3Xu1KFKAVgaisvtixghLDhMiJv75x/890f8134-3005-4a89-b4f8-e31a77298ad5.jpeg",
-    username: "Max",
-  },
-  {
-    id: "3",
-    text: "SOL pumping hard right now, already at $180",
-    sender: "user",
-    timestamp: new Date("2024-03-20T10:02:00"),
-    username: "solanaWhale",
-  },
-  {
-    id: "4",
-    text: "The market sentiment is super bullish. BNB and XRP also showing strength 📈",
-    sender: "agent",
-    timestamp: new Date("2024-03-20T10:03:00"),
-    avatar:
-      "https://storage.distilled.ai/distill/avatar/3gyMehG5frLLRXC3Xu1KFKAVgaisvtixghLDhMiJv75x/890f8134-3005-4a89-b4f8-e31a77298ad5.jpeg",
-    username: "Max",
-  },
-  {
-    id: "5",
-    text: "DOGE and SHIB starting to move. Meme season incoming? 🐕",
-    sender: "user",
-    timestamp: new Date("2024-03-20T10:04:00"),
-    username: "memeCoins",
-  },
-  {
-    id: "6",
-    text: "Layer 2s are the future. Look at Arbitrum and Optimism volumes! 🚀",
-    sender: "agent",
-    timestamp: new Date("2024-03-20T10:05:00"),
-    avatar:
-      "https://storage.distilled.ai/distill/avatar/3gyMehG5frLLRXC3Xu1KFKAVgaisvtixghLDhMiJv75x/890f8134-3005-4a89-b4f8-e31a77298ad5.jpeg",
-    username: "Max",
-  },
-  {
-    id: "7",
-    text: "DeFi TVL hitting new ATHs. The ecosystem is maturing nicely 📊",
-    sender: "user",
-    timestamp: new Date("2024-03-20T10:06:00"),
-    username: "defiWhale",
-  },
-];
+const clanMessages: Record<string, Message[]> = {
+  // Max.Clan - BTC focused
+  max: [
+    {
+      id: "max-1",
+      text: "BTC just hit a new ATH at $73k! 🚀",
+      sender: "user",
+      timestamp: new Date("2024-03-20T10:00:00"),
+      username: "btcWhale",
+    },
+    {
+      id: "max-2",
+      text: "The Bitcoin ETF inflows are massive today. Institutional adoption is accelerating!",
+      sender: "agent",
+      timestamp: new Date("2024-03-20T10:01:00"),
+      avatar: agents[0].avatar,
+      username: "Max",
+    },
+    {
+      id: "max-3",
+      text: "What's your price prediction for BTC after the halving?",
+      sender: "user",
+      timestamp: new Date("2024-03-20T10:02:00"),
+      username: "cryptoTrader",
+    },
+    {
+      id: "max-4",
+      text: "Based on historical data and current market conditions, we could see $100k-$120k by EOY 📈",
+      sender: "agent",
+      timestamp: new Date("2024-03-20T10:03:00"),
+      avatar: agents[0].avatar,
+      username: "Max",
+    },
+    {
+      id: "max-5",
+      text: "Mining difficulty is at an all-time high too. Network security keeps improving! 💪",
+      sender: "user",
+      timestamp: new Date("2024-03-20T10:04:00"),
+      username: "bitcoinMiner",
+    },
+  ],
 
-const botResponses = [
-  "BTC looking strong at $65k support 💪",
-  "ETH gas fees dropping, bullish signal! 📈",
-  "SOL ecosystem growing fast 🚀",
-  "DOGE memecoin season incoming? 🐕",
-  "Market sentiment is very positive today",
-  "Accumulating more BTC at these levels",
-  "ETH merge coming soon, price impact?",
-  "SOL TPS hitting new records 🔥",
-  "DeFi TVL growing exponentially 📊",
-  "NFT market heating up again! 🎨",
-];
+  // LeeQuid.Clan - ETH focused
+  leequid: [
+    {
+      id: "leequid-1",
+      text: "ETH staking rewards are looking juicy after Dencun! 🔥",
+      sender: "user",
+      timestamp: new Date("2024-03-20T10:00:00"),
+      username: "ethStaker",
+    },
+    {
+      id: "leequid-2",
+      text: "Layer 2 activity is booming. Gas fees on mainnet have dropped significantly!",
+      sender: "agent",
+      timestamp: new Date("2024-03-20T10:01:00"),
+      avatar: agents[1].avatar,
+      username: "LeeQuid",
+    },
+    {
+      id: "leequid-3",
+      text: "When do you think we'll see 32 ETH requirement lowered?",
+      sender: "user",
+      timestamp: new Date("2024-03-20T10:02:00"),
+      username: "validatorNode",
+    },
+    {
+      id: "leequid-4",
+      text: "DVT solutions are already enabling lower amounts. The ecosystem is evolving! 🚀",
+      sender: "agent",
+      timestamp: new Date("2024-03-20T10:03:00"),
+      avatar: agents[1].avatar,
+      username: "LeeQuid",
+    },
+    {
+      id: "leequid-5",
+      text: "EIP-4844 implementation is a game-changer for scalability",
+      sender: "user",
+      timestamp: new Date("2024-03-20T10:04:00"),
+      username: "ethDev",
+    },
+  ],
 
-const userMessages = [
-  "Just bought the BTC dip! 💎🙌",
-  "ETH looking ready for takeoff 🚀",
-  "SOL is my biggest bag right now",
-  "Who's accumulating at these levels?",
-  "This bull run is just getting started",
-  "DCA is the way! 💯",
-  "Technical analysis looking bullish",
-  "Holding strong through volatility",
-  "Never selling, only buying more",
-  "To the moon! 🌙",
-];
+  // Happy.Clan - SOL focused
+  happy: [
+    {
+      id: "happy-1",
+      text: "Solana TPS hitting new records! Network performance is insane 🚄",
+      sender: "user",
+      timestamp: new Date("2024-03-20T10:00:00"),
+      username: "solDev",
+    },
+    {
+      id: "happy-2",
+      text: "The NFT ecosystem on Solana is thriving. Tensor volumes are massive!",
+      sender: "agent",
+      timestamp: new Date("2024-03-20T10:01:00"),
+      avatar: agents[2].avatar,
+      username: "Happy",
+    },
+    {
+      id: "happy-3",
+      text: "What's your take on the new Firedancer client?",
+      sender: "user",
+      timestamp: new Date("2024-03-20T10:02:00"),
+      username: "solanaBuilder",
+    },
+    {
+      id: "happy-4",
+      text: "It's a huge step for decentralization. Multiple clients = more resilience 💪",
+      sender: "agent",
+      timestamp: new Date("2024-03-20T10:03:00"),
+      avatar: agents[2].avatar,
+      username: "Happy",
+    },
+    {
+      id: "happy-5",
+      text: "DeFi on Solana is exploding too. Phoenix swap is revolutionary!",
+      sender: "user",
+      timestamp: new Date("2024-03-20T10:04:00"),
+      username: "solanaWhale",
+    },
+  ],
+
+  // BlackRack.Clan - DeFi focused
+  blackrack: [
+    {
+      id: "blackrack-1",
+      text: "These new DeFi yields are incredible! Making 20% APY on stables 📈",
+      sender: "user",
+      timestamp: new Date("2024-03-20T10:00:00"),
+      username: "defiYield",
+    },
+    {
+      id: "blackrack-2",
+      text: "Real-yield protocols are the future. Sustainable tokenomics are key!",
+      sender: "agent",
+      timestamp: new Date("2024-03-20T10:01:00"),
+      avatar: agents[3].avatar,
+      username: "BlackRack",
+    },
+    {
+      id: "blackrack-3",
+      text: "What's your strategy for managing IL in LPs?",
+      sender: "user",
+      timestamp: new Date("2024-03-20T10:02:00"),
+      username: "lpFarmer",
+    },
+    {
+      id: "blackrack-4",
+      text: "Concentrated liquidity positions + active rebalancing is optimal 🎯",
+      sender: "agent",
+      timestamp: new Date("2024-03-20T10:03:00"),
+      avatar: agents[3].avatar,
+      username: "BlackRack",
+    },
+    {
+      id: "blackrack-5",
+      text: "The new veTokenomics model is genius for protocol loyalty!",
+      sender: "user",
+      timestamp: new Date("2024-03-20T10:04:00"),
+      username: "defiChad",
+    },
+  ],
+
+  // Karoi.Clan - Gaming focused
+  karoi: [
+    {
+      id: "karoi-1",
+      text: "The new P2E mechanics in Karoi's latest game are addictive! 🎮",
+      sender: "user",
+      timestamp: new Date("2024-03-20T10:00:00"),
+      username: "gamer123",
+    },
+    {
+      id: "karoi-2",
+      text: "Our AI-powered NPCs create truly unique gaming experiences!",
+      sender: "agent",
+      timestamp: new Date("2024-03-20T10:01:00"),
+      avatar: agents[4].avatar,
+      username: "Karoi",
+    },
+    {
+      id: "karoi-3",
+      text: "How do you balance gameplay and earning potential?",
+      sender: "user",
+      timestamp: new Date("2024-03-20T10:02:00"),
+      username: "cryptoGamer",
+    },
+    {
+      id: "karoi-4",
+      text: "Fun comes first! Earnings should enhance, not drive the experience 🎯",
+      sender: "agent",
+      timestamp: new Date("2024-03-20T10:03:00"),
+      avatar: agents[4].avatar,
+      username: "Karoi",
+    },
+    {
+      id: "karoi-5",
+      text: "The in-game marketplace integration is seamless!",
+      sender: "user",
+      timestamp: new Date("2024-03-20T10:04:00"),
+      username: "gameAssetTrader",
+    },
+  ],
+
+  // Nexus.Clan - Cross-chain focused
+  nexus: [
+    {
+      id: "nexus-1",
+      text: "Cross-chain bridging has never been smoother! ⛓️",
+      sender: "user",
+      timestamp: new Date("2024-03-20T10:00:00"),
+      username: "chainHopper",
+    },
+    {
+      id: "nexus-2",
+      text: "Our AI ensures optimal routing and minimal slippage across chains.",
+      sender: "agent",
+      timestamp: new Date("2024-03-20T10:01:00"),
+      avatar: agents[5].avatar,
+      username: "Nexus",
+    },
+    {
+      id: "nexus-3",
+      text: "What's your solution for cross-chain messaging?",
+      sender: "user",
+      timestamp: new Date("2024-03-20T10:02:00"),
+      username: "bridgeBuilder",
+    },
+    {
+      id: "nexus-4",
+      text: "We use advanced zero-knowledge proofs for secure message verification 🔐",
+      sender: "agent",
+      timestamp: new Date("2024-03-20T10:03:00"),
+      avatar: agents[5].avatar,
+      username: "Nexus",
+    },
+    {
+      id: "nexus-5",
+      text: "The interoperability standards you're setting are impressive!",
+      sender: "user",
+      timestamp: new Date("2024-03-20T10:04:00"),
+      username: "protocolDev",
+    },
+  ],
+
+  // Quantum.Clan - Research focused
+  quantum: [
+    {
+      id: "quantum-1",
+      text: "Your quantum-resistant cryptography research is groundbreaking! 🔬",
+      sender: "user",
+      timestamp: new Date("2024-03-20T10:00:00"),
+      username: "quantumDev",
+    },
+    {
+      id: "quantum-2",
+      text: "We're pushing the boundaries of post-quantum blockchain security.",
+      sender: "agent",
+      timestamp: new Date("2024-03-20T10:01:00"),
+      avatar: agents[6].avatar,
+      username: "Quantum",
+    },
+    {
+      id: "quantum-3",
+      text: "How close are we to practical quantum computing threats?",
+      sender: "user",
+      timestamp: new Date("2024-03-20T10:02:00"),
+      username: "cryptoResearcher",
+    },
+    {
+      id: "quantum-4",
+      text: "We're preparing well in advance. Better safe than sorry! 🛡️",
+      sender: "agent",
+      timestamp: new Date("2024-03-20T10:03:00"),
+      avatar: agents[6].avatar,
+      username: "Quantum",
+    },
+    {
+      id: "quantum-5",
+      text: "Your latest paper on lattice-based cryptography is fascinating!",
+      sender: "user",
+      timestamp: new Date("2024-03-20T10:04:00"),
+      username: "mathWhiz",
+    },
+  ],
+
+  // Wotoria.Clan - Social Analytics focused
+  wotoria: [
+    {
+      id: "wotoria-1",
+      text: "The sentiment analysis on crypto Twitter is mind-blowing! 📊",
+      sender: "user",
+      timestamp: new Date("2024-03-20T10:00:00"),
+      username: "dataAnalyst",
+    },
+    {
+      id: "wotoria-2",
+      text: "Our AI processes millions of social signals for accurate market insights.",
+      sender: "agent",
+      timestamp: new Date("2024-03-20T10:01:00"),
+      avatar: agents[7].avatar,
+      username: "Wotoria",
+    },
+    {
+      id: "wotoria-3",
+      text: "How do you filter out fake engagement and bots?",
+      sender: "user",
+      timestamp: new Date("2024-03-20T10:02:00"),
+      username: "socialExpert",
+    },
+    {
+      id: "wotoria-4",
+      text: "Advanced pattern recognition and behavior analysis does the trick! 🤖",
+      sender: "agent",
+      timestamp: new Date("2024-03-20T10:03:00"),
+      avatar: agents[7].avatar,
+      username: "Wotoria",
+    },
+    {
+      id: "wotoria-5",
+      text: "The predictive analytics for trend spotting are incredible!",
+      sender: "user",
+      timestamp: new Date("2024-03-20T10:04:00"),
+      username: "trendHunter",
+    },
+  ],
+
+  // Zenith.Clan - Wellness focused
+  zenith: [
+    {
+      id: "zenith-1",
+      text: "Your guided meditation sessions are life-changing! 🧘‍♂️",
+      sender: "user",
+      timestamp: new Date("2024-03-20T10:00:00"),
+      username: "mindfulTrader",
+    },
+    {
+      id: "zenith-2",
+      text: "Mental clarity is crucial for making sound investment decisions.",
+      sender: "agent",
+      timestamp: new Date("2024-03-20T10:01:00"),
+      avatar: agents[8].avatar,
+      username: "Zenith",
+    },
+    {
+      id: "zenith-3",
+      text: "How do you personalize wellness routines?",
+      sender: "user",
+      timestamp: new Date("2024-03-20T10:02:00"),
+      username: "wellnessSeeker",
+    },
+    {
+      id: "zenith-4",
+      text: "Our AI adapts to your stress levels and trading patterns! 🎯",
+      sender: "agent",
+      timestamp: new Date("2024-03-20T10:03:00"),
+      avatar: agents[8].avatar,
+      username: "Zenith",
+    },
+    {
+      id: "zenith-5",
+      text: "The stress management techniques really help during volatility!",
+      sender: "user",
+      timestamp: new Date("2024-03-20T10:04:00"),
+      username: "calmTrader",
+    },
+  ],
+};
+
+const dummyMessages: Record<string, { user: string[]; agent: string[] }> = {
+  max: {
+    user: [
+      "BTC dominance keeps climbing! 📈",
+      "These ETF inflows are insane",
+      "Who's accumulating at these levels?",
+      "Hash rate hitting new ATHs 💪",
+      "Lightning Network adoption growing fast",
+    ],
+    agent: [
+      "On-chain metrics suggest strong accumulation phase",
+      "Institutional demand remains robust 🏢",
+      "Technical analysis shows strong support at $65k",
+      "Market sentiment is extremely bullish 🚀",
+      "Long-term holders keep stacking sats",
+    ],
+  },
+  leequid: {
+    user: [
+      "Staking yields are amazing post-Dencun",
+      "L2s are the future of scaling 🚀",
+      "When's the next big ETH upgrade?",
+      "MEV-boost rewards looking good",
+      "zkSync Era volumes are insane!",
+    ],
+    agent: [
+      "Ethereum's ecosystem growth is exponential",
+      "Layer 2s are reducing gas fees significantly ⛽",
+      "Staking innovations coming soon",
+      "DeFi on ETH is evolving rapidly 📈",
+      "Institutional staking demand rising",
+    ],
+  },
+  happy: {
+    user: [
+      "Solana TPS is mind-blowing! ⚡",
+      "Tensor marketplace volume 📊",
+      "New Solana phones looking sleek",
+      "DeFi on SOL is booming",
+      "These NFT launches are huge",
+    ],
+    agent: [
+      "Network performance keeps improving",
+      "Mobile strategy is game-changing 📱",
+      "NFT ecosystem showing strong growth",
+      "DeFi TVL reaching new highs 📈",
+      "Developer activity at ATH",
+    ],
+  },
+  // Add similar patterns for other clans...
+};
 
 export default function Chat() {
-  const [messages, setMessages] = useState<Message[]>(mockMessages);
+  const selectedAgent = useAgentStore((state) => state.selectedAgent);
+  const [messages, setMessages] = useState<Message[]>([]);
   const [inputText, setInputText] = useState("");
   const [isFocused, setIsFocused] = useState(false);
   const [showScrollButton, setShowScrollButton] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
-  const selectedChat = useAgentStore((state) => state.selectedChat);
-  const selectedAgent = useAgentStore((state) => state.selectedAgent);
+
+  // Initialize messages based on selected agent
+  useEffect(() => {
+    if (selectedAgent) {
+      const agentId = selectedAgent.id.toLowerCase();
+      const initialMessages = clanMessages[agentId] || [];
+      setMessages(initialMessages);
+    }
+  }, [selectedAgent]);
+
+  // Add this effect for simulated chat
+  useEffect(() => {
+    if (!selectedAgent) return;
+
+    const interval = setInterval(() => {
+      const agentId = selectedAgent.id.toLowerCase();
+      const clanDummy = dummyMessages[agentId];
+
+      if (!clanDummy) return;
+
+      const isAgentMessage = Math.random() > 0.5;
+      const messages = isAgentMessage ? clanDummy.agent : clanDummy.user;
+      const randomMessage =
+        messages[Math.floor(Math.random() * messages.length)];
+
+      const newMessage: Message = {
+        id: Date.now().toString(),
+        text: randomMessage,
+        sender: isAgentMessage ? "agent" : "user",
+        timestamp: new Date(),
+        username: isAgentMessage
+          ? selectedAgent.name.replace(".Clan", "")
+          : `trader${Math.floor(Math.random() * 1000)}`,
+        avatar: isAgentMessage ? selectedAgent.avatar : undefined,
+      };
+
+      setMessages((prev) => [...prev, newMessage]);
+    }, 2000);
+
+    return () => clearInterval(interval);
+  }, [selectedAgent]);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -121,33 +501,33 @@ export default function Chat() {
     setShowScrollButton(!isNearBottom);
   };
 
-  // Reset messages when selected chat changes
-  useEffect(() => {
-    // Keep existing messages if any, don't reset to empty
-    if (messages.length === 0) {
-      setMessages(mockMessages);
-    }
+  const handleSendMessage = () => {
+    if (!inputText.trim() || !selectedAgent) return;
 
-    const interval = setInterval(() => {
-      const isBot = Math.random() > 0.5;
-      const newMessage = {
-        id: Date.now().toString(),
-        text: isBot
-          ? botResponses[Math.floor(Math.random() * botResponses.length)]
-          : userMessages[Math.floor(Math.random() * userMessages.length)],
-        sender: isBot ? "agent" : "user",
+    const newMessage: Message = {
+      id: Date.now().toString(),
+      text: inputText.trim(),
+      sender: "user",
+      timestamp: new Date(),
+      username: "You",
+    };
+
+    setMessages((prev) => [...prev, newMessage]);
+    setInputText("");
+
+    // Simulate agent response
+    setTimeout(() => {
+      const agentResponse: Message = {
+        id: (Date.now() + 1).toString(),
+        text: `Thanks for your message about ${inputText.slice(0, 20)}...`,
+        sender: "agent",
         timestamp: new Date(),
-        username: isBot
-          ? selectedAgent?.name
-          : `trader${Math.floor(Math.random() * 100)}`,
-        avatar: isBot ? selectedAgent?.avatar : undefined,
+        avatar: selectedAgent.avatar,
+        username: selectedAgent.name.replace(".Clan", ""),
       };
-
-      setMessages((prev) => [...prev, newMessage as Message]);
-    }, 2000);
-
-    return () => clearInterval(interval);
-  }, [selectedChat, selectedAgent, messages.length]);
+      setMessages((prev) => [...prev, agentResponse]);
+    }, 1000);
+  };
 
   return (
     <div className="relative flex flex-col flex-1 z-[11] bg-[#1B1C22] rounded-2xl border border-white/10 overflow-hidden">
