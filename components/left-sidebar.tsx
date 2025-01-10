@@ -241,7 +241,7 @@ export default function LeftSidebar({ isMobile }: LeftSidebarProps) {
           <div className="flex-none border-t border-white/10">
             <div className="p-4">
               <a
-                href="https://x.com/investaiagent"
+                href="https://x.com/foxaiagent"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex items-center justify-center rounded-xl hover:bg-white/5 hover:text-white/80 transition-all w-10 h-10"
