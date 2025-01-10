@@ -1,11 +1,11 @@
 import type { Metadata } from "next";
 import "./globals.css";
-import { Barlow } from "next/font/google";
+import { Space_Mono } from "next/font/google";
 
-const barlow = Barlow({
+const spaceMono = Space_Mono({
   subsets: ["latin"],
-  weight: ["400", "500", "600", "700"],
-  variable: "--font-barlow",
+  weight: ["400", "700"],
+  variable: "--font-roboto",
   display: "swap",
 });
 
@@ -34,7 +34,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${barlow.variable}`}>
+    <html lang="en" className={`${spaceMono.variable}`}>
       <body className="font-barlow">{children}</body>
     </html>
   );

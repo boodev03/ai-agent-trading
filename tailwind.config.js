@@ -8,7 +8,7 @@ module.exports = {
   theme: {
     extend: {
       fontFamily: {
-        barlow: ["var(--font-barlow)"],
+        barlow: ["var(--font-roboto)"],
       },
       screens: {
         'md2': '900px',
